@@ -44,13 +44,13 @@ struct Entry<'a> {
 
 fn parse_line(line: &str) -> Option<Entry> {
     let (policy, password) = line.split_once(": ")?;
-    let (range, letter) = policy.split_once(" ")?;
-    let (min, max) = range.split_once("-")?;
-    let _min = min.parse::<usize>().ok()?;
-    let _max = max.parse::<usize>().ok()?;
-    let _letter = letter.chars().nth(0)?;
+    let (range, letter_str) = policy.split_once(" ")?;
+    let (min_str, max_str) = range.split_once("-")?;
+    let min = min_str.parse::<usize>().ok()?;
+    let max = max_str.parse::<usize>().ok()?;
+    let letter = letter_str.chars().nth(0)?;
 
-    Some(Entry { min: _min, max: _max, letter: _letter, password })
+    Some(Entry { min, max, letter, password })
 }
 
 

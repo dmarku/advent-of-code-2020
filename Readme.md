@@ -1,6 +1,6 @@
 # Implementations for Advent of Code 2020
 
-All days so far have at least a partial solution in Rust. There's no additional libraries, every program can be built in the respective directory with:
+All days so far have at least a partial solution in Rust (version 1.48 at the time of writing). The code only uses the standard library, there are no additional dependencies. Every program can be built in the respective directory with:
 
 ```
 $ rustc aoc-2020-<day>.rs

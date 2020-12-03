@@ -35,13 +35,23 @@ fn main() {
     }
 
     let triple = expenses
-        .map(|a: &u32| expenses.map(|b: &u32| expenses.map(|c: &u32| (a, b, c))).flatten())
+        .map(|a: &u32| {
+            expenses
+                .map(|b: &u32| expenses.map(|c: &u32| (a, b, c)))
+                .flatten()
+        })
         .flatten()
-        .filter(|(a, b, c)| a != b && b != c && c != a &&  a + b + c == 2020)
+        .filter(|(a, b, c)| a != b && b != c && c != a && a + b + c == 2020)
         .nth(0);
 
     match triple {
-        Some((a, b, c)) => println!("matching pair is {}, {}, {}; product is {}", &a, &b, &c,  &a * &b * &c),
+        Some((a, b, c)) => println!(
+            "matching pair is {}, {}, {}; product is {}",
+            &a,
+            &b,
+            &c,
+            &a * &b * &c
+        ),
         None => println!("couldn't find a matching pair"),
     }
 }

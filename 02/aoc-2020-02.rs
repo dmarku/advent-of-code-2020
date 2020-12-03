@@ -10,13 +10,13 @@ fn main() {
 
     let mut file = match File::open(&path) {
         Err(why) => panic!("couldn't open {}: {}", display, why),
-        Ok(file) => file
+        Ok(file) => file,
     };
 
     let mut s = String::new();
     match file.read_to_string(&mut s) {
         Err(why) => panic!("couldn't read {}: {}", display, why),
-        Ok(_) => ()
+        Ok(_) => (),
     }
 
     let mut password_count_v1: usize = 0;
@@ -24,7 +24,12 @@ fn main() {
 
     for line in s.lines() {
         match parse_line(&line) {
-            Some(Entry {min, max, letter, password}) => {
+            Some(Entry {
+                min,
+                max,
+                letter,
+                password,
+            }) => {
                 // check policy defined in Part I
                 let count = count_letter(&password, &letter);
                 if count >= min && count <= max {
@@ -39,13 +44,19 @@ fn main() {
                         password_count_v2 += 1;
                     }
                 }
-            },
+            }
             None => (),
         }
     }
 
-    println!("{} passwords are valid according to part 1", password_count_v1);
-    println!("{} passwords are valid according to part 2", password_count_v2);
+    println!(
+        "{} passwords are valid according to part 1",
+        password_count_v1
+    );
+    println!(
+        "{} passwords are valid according to part 2",
+        password_count_v2
+    );
 }
 
 struct Entry<'a> {
@@ -63,9 +74,13 @@ fn parse_line(line: &str) -> Option<Entry> {
     let max = max_str.parse::<usize>().ok()?;
     let letter = letter_str.chars().nth(0)?;
 
-    Some(Entry { min, max, letter, password })
+    Some(Entry {
+        min,
+        max,
+        letter,
+        password,
+    })
 }
-
 
 fn count_letter(string: &str, letter: &char) -> usize {
     string.chars().filter(|c| c == letter).count()

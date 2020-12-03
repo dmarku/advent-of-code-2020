@@ -14,13 +14,13 @@ fn main() {
 
     let mut file = match File::open(&path) {
         Err(why) => panic!("couldn't open {}: {}", display, why),
-        Ok(file) => file
+        Ok(file) => file,
     };
 
     let mut s = String::new();
     match file.read_to_string(&mut s) {
         Err(why) => panic!("couldn't read {}: {}", display, why),
-        Ok(_) => ()
+        Ok(_) => (),
     }
 
     let slopes = vec![(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)];
@@ -51,7 +51,11 @@ fn check_slope(s: &str, increment_x: usize, increment_y: usize) -> usize {
     let mut tree_count = 0;
     for line in s.lines() {
         if (y % increment_y) == 0 {
-            if let Some(Tile::Tree) = line.chars().map(|c| parse_character(&c)).nth(x % line.len()) {
+            if let Some(Tile::Tree) = line
+                .chars()
+                .map(|c| parse_character(&c))
+                .nth(x % line.len())
+            {
                 tree_count += 1;
             }
             x += increment_x;

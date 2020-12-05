@@ -49,29 +49,29 @@ fn main() {
         .iter()
         .filter(|ref document| {
             has_all_props(document)
-                && document.iter().all(|(key, value)| match key {
-                    &"byr" => {
+                && document.iter().all(|(key, value)| match *key {
+                    "byr" => {
                         value.len() == 4
                             && match value.parse::<u16>() {
                                 Ok(year) => year >= 1920 && year <= 2002,
                                 Err(_) => false,
                             }
                     }
-                    &"iyr" => {
+                    "iyr" => {
                         value.len() == 4
                             && match value.parse::<u16>() {
                                 Ok(year) => year >= 2010 && year <= 2020,
                                 Err(_) => false,
                             }
                     }
-                    &"eyr" => {
+                    "eyr" => {
                         value.len() == 4
                             && match value.parse::<u16>() {
                                 Ok(year) => year >= 2020 && year <= 2030,
                                 Err(_) => false,
                             }
                     }
-                    &"hgt" => {
+                    "hgt" => {
                         (value.ends_with("cm")
                             && match value[..value.len() - 2].parse::<u8>() {
                                 Ok(height) => (height >= 150 && height <= 193),
@@ -84,7 +84,7 @@ fn main() {
                                 })
                             || (false)
                     }
-                    &"hcl" => {
+                    "hcl" => {
                         value.len() == 7
                             && value.chars().nth(0) == Some('#')
                             && value
@@ -92,8 +92,8 @@ fn main() {
                                 .skip(1)
                                 .all(|c| "0123456789abdcef".contains(c))
                     }
-                    &"ecl" => vec!["amb", "blu", "brn", "gry", "grn", "hzl", "oth"].contains(value),
-                    &"pid" => value.len() == 9 && value.chars().all(|c| "0123456789".contains(c)),
+                    "ecl" => vec!["amb", "blu", "brn", "gry", "grn", "hzl", "oth"].contains(value),
+                    "pid" => value.len() == 9 && value.chars().all(|c| "0123456789".contains(c)),
                     _ => true,
                 })
         })

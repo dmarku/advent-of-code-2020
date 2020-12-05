@@ -3,8 +3,8 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
-fn main() {
-    let path = Path::new("input.txt");
+fn read_input(filename: &str) -> String {
+    let path = Path::new(filename);
     let display = path.display();
 
     let mut file = match File::open(&path) {
@@ -17,6 +17,12 @@ fn main() {
         Err(why) => panic!("couldn't read {}: {}", display, why),
         Ok(_) => (),
     }
+
+    input
+}
+
+fn main() {
+    let input = read_input("input.txt");
 
     let documents: Vec<HashMap<&str, &str>> = input
         .split("\n\n")

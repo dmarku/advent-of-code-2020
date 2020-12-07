@@ -41,12 +41,13 @@ fn main() {
     let mut everyone_yes_total = 0;
     for group in &groups {
         let persons: Vec<&str> = group.lines().collect();
-        let answers_with_yes = ('a'..='z').filter(|label| {
-            persons
-                .iter()
-                .all(|ref answers| answers.contains(|l| l == *label))
-        });
-        everyone_yes_total += answers_with_yes.count();
+        if let Some((first, rest)) = persons.split_first() {
+            let answers_with_yes = first.chars().filter(|label| {
+                rest.iter()
+                    .all(|ref answers| answers.contains(|l| l == *label))
+            });
+            everyone_yes_total += answers_with_yes.count();
+        }
     }
 
     println!(

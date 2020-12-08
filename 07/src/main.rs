@@ -1,4 +1,3 @@
-use regex::Regex;
 use std::format;
 use std::fs::File;
 use std::io::prelude::*;
@@ -34,31 +33,60 @@ struct Bag {
 */
 
 struct Rule<'a> {
-    color: String,
+    color: &'a str,
     contents: Vec<(&'a str, u8)>,
 }
 
-fn parse_rule(rule_text: &str) -> Rule {
-    let color: String = rule_text
-        .split_whitespace()
-        .take(2)
-        .collect::<Vec<&str>>()
-        .join(" ");
+fn parse_rule(rule_text: &str) -> Option<Rule> {
+    if let [color_text, contents_text] =
+        rule_text.splitn(2, " contain ").collect::<Vec<&str>>()[..2]
+    {
+        let color = color_text
+            .find("bag")
+            .and_then(|pos| Some(color_text[..pos].trim()))?;
 
-    let contents = vec![("colorless", 25)];
+        let contents: Vec<(&str, u8)> = if contents_text.starts_with("no") {
+            vec![]
+        } else {
+            contents_text
+                .split(", ")
+                .map(|item| {
+                    let count_string = item.split_whitespace().nth(0).unwrap();
+                    let count = count_string.parse::<u8>().ok().unwrap();
 
-    Rule { color, contents }
+                    let color = match (item.find(" "), item.find(" bag")) {
+                        (Some(start), Some(end)) => &item[start + 1..end],
+                        _ => "meh",
+                    };
+
+                    (color, count)
+                })
+                .collect()
+        };
+
+        Some(Rule { color, contents })
+    } else {
+        None
+    }
 }
 
 fn main() {
     let input = read_input("input.txt");
     let rules = input.lines().map(|ref rule| parse_rule(rule));
     for rule in rules {
-        let contents_string = rule
-            .contents
-            .iter()
-            .map(|(color, count)| format!("{} of {}", count, color))
-            .fold(String::new(), |s, c| s + &c);
-        println!("{} contains {}", rule.color, contents_string);
+        match rule {
+            Some(Rule { color, contents }) => {
+                if contents.len() > 0 {
+                    let contents_string = contents
+                        .iter()
+                        .map(|(color, count)| format!("{} of {}", count, color))
+                        .fold(String::new(), |s, c| s + &c + ", ");
+                    println!("{} contains {}", color, contents_string);
+                } else {
+                    println!("{} is empty", color);
+                }
+            }
+            None => (),
+        }
     }
 }

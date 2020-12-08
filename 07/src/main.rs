@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::format;
 use std::fs::File;
 use std::io::prelude::*;
@@ -90,4 +91,32 @@ fn main() {
             println!("{} is empty", color);
         }
     }
+
+    let mut containing_bags = HashSet::new();
+    containing_bags.insert("shiny gold");
+
+    loop {
+        let previous_size = containing_bags.len();
+
+        for Rule { color, contents } in &rules {
+            if contents
+                .iter()
+                .any(|(item_color, ..)| containing_bags.contains(item_color))
+            {
+                containing_bags.insert(color);
+            }
+        }
+
+        if previous_size >= containing_bags.len() {
+            break;
+        }
+    }
+
+    println!("-------------------------------------");
+    for bag in &containing_bags {
+        println!("{}", bag);
+    }
+
+    // omit "shiny gold" itself from the results
+    println!("{}", containing_bags.len() - 1)
 }

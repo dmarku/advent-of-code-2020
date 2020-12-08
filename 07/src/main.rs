@@ -32,18 +32,19 @@ struct Bag {
 }
 */
 
+// note to self: lifetime annotation <'a> means that a Rule struct cannot exceed
+// the lifetime of 'a, so a rule 'dies' lives _at most_ as long as the `color`
+// string and any string in its `contents` vector
 struct Rule<'a> {
     color: &'a str,
     contents: Vec<(&'a str, u8)>,
 }
 
 fn parse_rule(rule_text: &str) -> Option<Rule> {
-    if let [color_text, contents_text] =
-        rule_text.splitn(2, " contain ").collect::<Vec<&str>>()[..2]
+    if let [container, contents_text] = rule_text.splitn(2, " contain ").collect::<Vec<&str>>()[..2]
     {
-        let color = color_text
-            .find("bag")
-            .and_then(|pos| Some(color_text[..pos].trim()))?;
+        let color_end = container.find("bag")?;
+        let color = container[..color_end].trim();
 
         let contents: Vec<(&str, u8)> = if contents_text.starts_with("no") {
             vec![]
@@ -72,21 +73,21 @@ fn parse_rule(rule_text: &str) -> Option<Rule> {
 
 fn main() {
     let input = read_input("input.txt");
-    let rules = input.lines().map(|ref rule| parse_rule(rule));
-    for rule in rules {
-        match rule {
-            Some(Rule { color, contents }) => {
-                if contents.len() > 0 {
-                    let contents_string = contents
-                        .iter()
-                        .map(|(color, count)| format!("{} of {}", count, color))
-                        .fold(String::new(), |s, c| s + &c + ", ");
-                    println!("{} contains {}", color, contents_string);
-                } else {
-                    println!("{} is empty", color);
-                }
-            }
-            None => (),
+
+    let rules: Vec<Rule> = input
+        .lines()
+        .map(|ref rule| parse_rule(rule).unwrap())
+        .collect();
+
+    for Rule { color, contents } in &rules {
+        if contents.len() > 0 {
+            let contents_string = contents
+                .iter()
+                .map(|(color, count)| format!("{} of {}", count, color))
+                .fold(String::new(), |s, c| s + &c + ", ");
+            println!("{} contains {}", color, contents_string);
+        } else {
+            println!("{} is empty", color);
         }
     }
 }

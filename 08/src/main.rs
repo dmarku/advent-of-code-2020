@@ -21,17 +21,14 @@ fn read_input(filename: &str) -> String {
     input
 }
 
-fn main() {
-    let input = read_input("input.txt");
-    let lines: Vec<&str> = input.lines().collect();
-
+fn run(instructions: &Vec<&str>) -> Result<i32, (usize, i32)> {
     let mut program_counter = 0;
     let mut accumulator = 0;
 
     let mut visited_instructions: HashSet<usize> = HashSet::new();
 
-    while program_counter < lines.len() && !visited_instructions.contains(&program_counter) {
-        let line = lines[program_counter];
+    while program_counter < instructions.len() && !visited_instructions.contains(&program_counter) {
+        let line = instructions[program_counter];
         visited_instructions.insert(program_counter);
         match &line[..3] {
             "acc" => {
@@ -55,8 +52,22 @@ fn main() {
         }
     }
 
-    print!(
-        "program reached duplicate instruction at line {}, accumulator = {}",
-        program_counter, accumulator
-    );
+    if program_counter > instructions.len() {
+        Ok(accumulator)
+    } else {
+        Err((program_counter, accumulator))
+    }
+}
+
+fn main() {
+    let input = read_input("input.txt");
+    let lines: Vec<&str> = input.lines().collect();
+
+    match run(&lines) {
+        Ok(accumulator) => println!("program terminated with accumulator = {}", accumulator),
+        Err((program_counter, accumulator)) => println!(
+            "program reached duplicate instruction at line {}, accumulator = {}",
+            program_counter, accumulator
+        ),
+    }
 }

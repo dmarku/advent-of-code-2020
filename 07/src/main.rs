@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use std::format;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
@@ -93,18 +92,6 @@ fn main() {
         .map(|ref rule| parse_rule(rule).unwrap())
         .collect();
 
-    for Rule { color, contents } in &rules {
-        if contents.len() > 0 {
-            let contents_string = contents
-                .iter()
-                .map(|(color, count)| format!("{} of {}", count, color))
-                .fold(String::new(), |s, c| s + &c + ", ");
-            println!("{} contains {}", color, contents_string);
-        } else {
-            println!("{} is empty", color);
-        }
-    }
-
     let mut containing_bags = HashSet::new();
     containing_bags.insert("shiny gold");
 
@@ -125,11 +112,9 @@ fn main() {
         }
     }
 
-    println!("-------------------------------------");
-    for bag in &containing_bags {
-        println!("{}", bag);
-    }
-
     // omit "shiny gold" itself from the results
-    println!("{}", containing_bags.len() - 1)
+    println!(
+        "PART I: a shiny gold bag may be contained in {} different bags",
+        containing_bags.len() - 1
+    )
 }

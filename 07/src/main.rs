@@ -47,7 +47,7 @@ fn parse_rule(rule_text: &str) -> Option<Rule> {
         let color_end = container.find("bag")?;
         let color = container[..color_end].trim();
 
-        let contents: Vec<(&str, u8)> = if contents_text.starts_with("no") {
+        let contents: Vec<(&str, u8)> = if contents_text.starts_with("no other bags") {
             vec![]
         } else {
             contents_text
@@ -58,7 +58,7 @@ fn parse_rule(rule_text: &str) -> Option<Rule> {
 
                     let color = match (item.find(" "), item.find(" bag")) {
                         (Some(start), Some(end)) => &item[start + 1..end],
-                        _ => "meh",
+                        _ => panic!("unexpected color format {}", item),
                     };
 
                     (color, count)
@@ -74,6 +74,19 @@ fn parse_rule(rule_text: &str) -> Option<Rule> {
 
 fn main() {
     let input = read_input("input.txt");
+
+    // test input
+    /*
+        let input = "light red bags contain 1 bright white bag, 2 muted yellow bags.
+    dark orange bags contain 3 bright white bags, 4 muted yellow bags.
+    bright white bags contain 1 shiny gold bag.
+    muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.
+    shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.
+    dark olive bags contain 3 faded blue bags, 4 dotted black bags.
+    vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
+    faded blue bags contain no other bags.
+    dotted black bags contain no other bags.";
+    */
 
     let rules: Vec<Rule> = input
         .lines()

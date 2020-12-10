@@ -63,11 +63,39 @@ fn main() {
     let input = read_input("input.txt");
     let lines: Vec<&str> = input.lines().collect();
 
+    // part I
     match run(&lines) {
         Ok(accumulator) => println!("program terminated with accumulator = {}", accumulator),
         Err((program_counter, accumulator)) => println!(
             "program reached duplicate instruction at line {}, accumulator = {}",
             program_counter, accumulator
         ),
+    }
+
+    // part II
+    // brute force approach - replace any single nop/jmp, see if program execution terminates
+    for line_no in 0..lines.len() {
+        let line = lines[line_no];
+        let (cmd, args) = line.split_at(3);
+        if cmd == "acc" {
+            continue;
+        }
+
+        // use a string here to store an unknown number of characters
+        let replacement: String = match cmd {
+            "nop" => "jmp".to_owned() + args,
+            "jmp" => "nop".to_owned() + args,
+            _ => line.to_owned(),
+        };
+
+        let modified_lines: Vec<&str> = lines
+            .clone()
+            .splice(line_no..line_no + 1, vec![&replacement[..]])
+            .collect();
+
+        match run(&modified_lines) {
+            Ok(accumulator) => println!("successfully finished with modifying line #{line_no} to {replacement}; final accu = {accu}", line_no = line_no, replacement = replacement, accu = accumulator),
+            Err(_) => ()
+        }
     }
 }

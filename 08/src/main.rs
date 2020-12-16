@@ -21,81 +21,130 @@ fn read_input(filename: &str) -> String {
     input
 }
 
-fn run(instructions: &Vec<&str>) -> Result<i32, (usize, i32)> {
+enum Stop {
+    Terminated(i32),
+    LoopDetected(usize, i32),
+}
+
+#[derive(Clone, Copy)]
+enum Instruction {
+    Accumulate(i32),
+    Nop(i32),
+    Jump(i32),
+}
+
+impl std::fmt::Display for Instruction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Instruction::Accumulate(value) => write!(f, "acc {}", value),
+            Instruction::Jump(offset) => write!(f, "jmp {}", offset),
+            Instruction::Nop(value) => write!(f, "nop {}", value),
+        }
+    }
+}
+
+fn decode(instruction: &str) -> Instruction {
+    let opcode = &instruction[..3];
+    match opcode {
+        "acc" => Instruction::Accumulate(instruction[4..].parse::<i32>().unwrap()),
+        "nop" => Instruction::Nop(instruction[4..].parse::<i32>().unwrap()),
+        "jmp" => Instruction::Jump(instruction[4..].parse::<i32>().unwrap()),
+        _ => panic!("invalid instruction"),
+    }
+}
+
+fn run(instructions: &Vec<Instruction>) -> Result<Stop, ()> {
     let mut program_counter = 0;
     let mut accumulator = 0;
 
     let mut visited_instructions: HashSet<usize> = HashSet::new();
 
-    while program_counter < instructions.len() && !visited_instructions.contains(&program_counter) {
-        let line = instructions[program_counter];
+    while program_counter < instructions.len() {
+        if visited_instructions.contains(&program_counter) {
+            return Ok(Stop::LoopDetected(program_counter, accumulator));
+        }
         visited_instructions.insert(program_counter);
-        match &line[..3] {
-            "acc" => {
-                accumulator += line[4..].parse::<i32>().unwrap();
+
+        let ref instruction = instructions[program_counter];
+        match instruction {
+            Instruction::Accumulate(value) => {
+                accumulator += value;
                 program_counter += 1;
             }
-            "nop" => {
+            Instruction::Nop(_) => {
                 program_counter += 1;
             }
-            "jmp" => {
-                let offset = line[4..].parse::<i32>().unwrap();
+            Instruction::Jump(offset) => {
                 program_counter = if offset.is_negative() {
                     program_counter
-                        .checked_sub(offset.wrapping_abs() as u32 as usize)
+                        .checked_sub(offset.wrapping_abs() as usize)
                         .unwrap()
                 } else {
-                    program_counter.checked_add(offset as usize).unwrap()
-                }
+                    program_counter.checked_add(*offset as usize).unwrap()
+                };
             }
-            _ => (),
         }
     }
 
-    if program_counter > instructions.len() {
-        Ok(accumulator)
-    } else {
-        Err((program_counter, accumulator))
-    }
+    Ok(Stop::Terminated(accumulator))
 }
 
 fn main() {
     let input = read_input("input.txt");
-    let lines: Vec<&str> = input.lines().collect();
+    /*let input = "nop +0
+    acc +1
+    jmp +4
+    acc +3
+    jmp -3
+    acc -99
+    acc +1
+    jmp -4
+    acc +6";
+    */
 
-    // part I
-    match run(&lines) {
-        Ok(accumulator) => println!("program terminated with accumulator = {}", accumulator),
-        Err((program_counter, accumulator)) => println!(
+    let instructions: Vec<Instruction> = input.lines().map(|line| decode(line)).collect();
+
+    println!("Part I");
+
+    match run(&instructions) {
+        Ok(Stop::Terminated(accumulator)) => {
+            println!("program terminated with accumulator = {}", accumulator)
+        }
+        Ok(Stop::LoopDetected(program_counter, accumulator)) => println!(
             "program reached duplicate instruction at line {}, accumulator = {}",
             program_counter, accumulator
         ),
+        _ => (),
     }
 
-    // part II
+    println!("Part II");
+
     // brute force approach - replace any single nop/jmp, see if program execution terminates
-    for line_no in 0..lines.len() {
-        let line = lines[line_no];
-        let (cmd, args) = line.split_at(3);
-        if cmd == "acc" {
-            continue;
-        }
-
-        // use a string here to store an unknown number of characters
-        let replacement: String = match cmd {
-            "nop" => "jmp".to_owned() + args,
-            "jmp" => "nop".to_owned() + args,
-            _ => line.to_owned(),
-        };
-
-        let modified_lines: Vec<&str> = lines
-            .clone()
-            .splice(line_no..line_no + 1, vec![&replacement[..]])
+    for line_no in 0..instructions.len() {
+        let modified_instructions: Vec<Instruction> = instructions
+            .iter()
+            .enumerate()
+            .map(|(n, i)| {
+                if n == line_no {
+                    match i {
+                        Instruction::Nop(v) => Instruction::Jump(*v),
+                        Instruction::Jump(offset) => Instruction::Nop(*offset),
+                        _ => *i,
+                    }
+                } else {
+                    *i
+                }
+            })
             .collect();
 
-        match run(&modified_lines) {
-            Ok(accumulator) => println!("successfully finished with modifying line #{line_no} to {replacement}; final accu = {accu}", line_no = line_no, replacement = replacement, accu = accumulator),
-            Err(_) => ()
+        match run(&modified_instructions).unwrap() {
+            Stop::Terminated(accumulator) => println!(
+                "successfully finished with modifying line #{} ({} -> {}); accu = {}",
+                line_no, instructions[line_no], modified_instructions[line_no], accumulator
+            ),
+            Stop::LoopDetected(pc, acc) => {
+                //println!("program loops at {}; last accumulator: {}", pc, acc)
+            }
         }
     }
 }

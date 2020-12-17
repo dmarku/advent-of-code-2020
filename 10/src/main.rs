@@ -22,7 +22,54 @@ fn read_input(filename: &str) -> String {
 }
 
 fn main() {
+    let _example_1 = "16
+10
+15
+5
+1
+11
+7
+19
+6
+12
+4";
+
+    let _example_2 = "28
+33
+18
+42
+31
+14
+46
+20
+48
+47
+24
+23
+49
+45
+19
+38
+39
+11
+1
+32
+25
+35
+8
+17
+7
+9
+4
+2
+34
+10
+3";
+
+    //let input = _example_1;
+    //let input = _example_2;
     let input = read_input("input.txt");
+
     println!("lines: {}", input.lines().count());
     let mut joltages: Vec<i32> = input.lines().map(|s| s.parse::<i32>().unwrap()).collect();
     joltages.sort();
@@ -31,6 +78,7 @@ fn main() {
 
     joltages.insert(0, 0);
     joltages.push(joltages.last().unwrap() + 3);
+
     let differences: Vec<i32> = joltages
         .iter()
         .skip(1)
@@ -44,10 +92,39 @@ fn main() {
         *count += 1;
     }
 
-    println!("{}", differences.len());
-    println!("{:?}", bins);
     println!(
-        "{:?}",
+        "the product of 1-jolt differences and 3-jolt differences is {:?}",
         *bins.get(&1).unwrap_or(&0) * bins.get(&3).unwrap_or(&0)
     );
+
+    println!("part II");
+
+    let paths = count_paths(&joltages, joltages.last().unwrap());
+    println!("found a total of {} paths", paths);
+}
+
+/// count possible paths towards the last joltage
+fn count_paths(sorted_joltages: &[i32], end: &i32) -> usize {
+    match sorted_joltages.len() {
+        0 => 0,
+        1 => {
+            if sorted_joltages[0] == *end {
+                1
+            } else {
+                0
+            }
+        }
+        _ => sorted_joltages
+            .iter()
+            // add vector index to joltage
+            .enumerate()
+            // leave out the start joltage
+            .skip(1)
+            // filter reachable subsets
+            .take_while(|(_, j)| *j - sorted_joltages[0] <= 3)
+            .map(|(i, _)| &sorted_joltages[i..])
+            .filter(|js| js.contains(&sorted_joltages.last().unwrap()))
+            .map(|js| count_paths(js, end))
+            .sum::<usize>(),
+    }
 }

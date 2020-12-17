@@ -99,8 +99,26 @@ fn main() {
 
     println!("part II");
 
+    // approach 1: brute-force; takes very long for puzzle input
+    /*
     let paths = count_paths(&joltages, joltages.last().unwrap());
     println!("found a total of {} paths", paths);
+    */
+
+    // approach 2: dynamic programming
+    // cache existing calculations
+    let mut path_counts: HashMap<&i32, usize> = HashMap::new();
+    path_counts.insert(joltages.last().unwrap(), 1);
+    for j in joltages.iter().rev().skip(1) {
+        path_counts.insert(
+            j,
+            (j + 1..=j + 3)
+                .map(|nj| *path_counts.get(&nj).unwrap_or(&0))
+                .sum(),
+        );
+    }
+
+    println!("{:?}", path_counts.get(joltages.first().unwrap()));
 }
 
 /// count possible paths towards the last joltage

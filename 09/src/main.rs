@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::prelude::*;
+use std::ops::Range;
 use std::path::Path;
 
 fn read_input(filename: &str) -> String {
@@ -35,6 +36,18 @@ fn is_sum(numbers: &[u64], value: &u64) -> bool {
     false
 }
 
+fn find_summand_sequence(numbers: &[u64], number: &u64) -> Option<Range<usize>> {
+    for start in 0..numbers.len() {
+        for end in start + 1..numbers.len() {
+            if numbers[start..end].iter().sum::<u64>() == *number {
+                return Some(start..end);
+            }
+        }
+    }
+
+    None
+}
+
 fn main() {
     let input = read_input("input.txt");
     let numbers: Vec<u64> = input.lines().map(|s| s.parse::<u64>().unwrap()).collect();
@@ -51,4 +64,14 @@ fn main() {
         .expect("found no invalid number");
 
     println!("first invalid number is {} (#{})", invalid_number, i);
+
+    println!("part II");
+
+    let range = find_summand_sequence(&numbers, &invalid_number)
+        .expect("couldn't find a sequence of summands");
+
+    let summands = &numbers[range];
+    let sum = summands.iter().min().unwrap() + summands.iter().max().unwrap();
+
+    println!("sum of the smallest and largest in the sequence: {}", sum)
 }

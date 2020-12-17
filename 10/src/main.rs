@@ -99,13 +99,7 @@ fn main() {
 
     println!("part II");
 
-    // approach 1: brute-force; takes very long for puzzle input
-    /*
-    let paths = count_paths(&joltages, joltages.last().unwrap());
-    println!("found a total of {} paths", paths);
-    */
-
-    // approach 2: dynamic programming
+    // approach 2: "dynamic programming"
     // cache existing calculations
     let mut path_counts: HashMap<&i32, usize> = HashMap::new();
     path_counts.insert(joltages.last().unwrap(), 1);
@@ -118,31 +112,8 @@ fn main() {
         );
     }
 
-    println!("{:?}", path_counts.get(joltages.first().unwrap()));
-}
-
-/// count possible paths towards the last joltage
-fn count_paths(sorted_joltages: &[i32], end: &i32) -> usize {
-    match sorted_joltages.len() {
-        0 => 0,
-        1 => {
-            if sorted_joltages[0] == *end {
-                1
-            } else {
-                0
-            }
-        }
-        _ => sorted_joltages
-            .iter()
-            // add vector index to joltage
-            .enumerate()
-            // leave out the start joltage
-            .skip(1)
-            // filter reachable subsets
-            .take_while(|(_, j)| *j - sorted_joltages[0] <= 3)
-            .map(|(i, _)| &sorted_joltages[i..])
-            .filter(|js| js.contains(&sorted_joltages.last().unwrap()))
-            .map(|js| count_paths(js, end))
-            .sum::<usize>(),
-    }
+    println!(
+        "{} possible adapter combinations",
+        path_counts.get(joltages.first().unwrap()).unwrap()
+    );
 }

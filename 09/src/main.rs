@@ -41,12 +41,16 @@ fn main() {
 
     let preamble_length = 25;
 
-    let checked: Vec<_> = numbers
+    println!("part I");
+
+    if let Some((i, n)) = numbers
         .iter()
         .enumerate()
         .skip(preamble_length)
-        .map(|(i, n)| (i, n, is_sum(&numbers[i - preamble_length..i], &n)))
-        .collect();
-
-    println!("{:?}", checked);
+        .find(|(i, n)| !is_sum(&numbers[i - preamble_length..*i], &n))
+    {
+        println!("first aberrant number is {} (#{})", n, i);
+    } else {
+        println!("found no aberrant number");
+    }
 }

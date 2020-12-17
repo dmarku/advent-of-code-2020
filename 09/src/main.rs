@@ -43,14 +43,12 @@ fn main() {
 
     println!("part I");
 
-    if let Some((i, n)) = numbers
+    let (i, invalid_number) = numbers
         .iter()
         .enumerate()
         .skip(preamble_length)
         .find(|(i, n)| !is_sum(&numbers[i - preamble_length..*i], &n))
-    {
-        println!("first aberrant number is {} (#{})", n, i);
-    } else {
-        println!("found no aberrant number");
-    }
+        .expect("found no invalid number");
+
+    println!("first invalid number is {} (#{})", invalid_number, i);
 }

@@ -21,11 +21,22 @@ fn read_input(filename: &str) -> String {
     input
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Eq)]
 enum Tile {
     Floor,
     EmptySeat,
     OccupiedSeat,
+}
+
+impl std::cmp::PartialEq for Tile {
+    fn eq(&self, other: &Self) -> bool {
+        match (*self, *other) {
+            (Tile::Floor, Tile::Floor) => true,
+            (Tile::EmptySeat, Tile::EmptySeat) => true,
+            (Tile::OccupiedSeat, Tile::OccupiedSeat) => true,
+            _ => false,
+        }
+    }
 }
 
 impl fmt::Debug for Tile {
@@ -39,6 +50,7 @@ impl fmt::Debug for Tile {
     }
 }
 
+#[derive(PartialEq)]
 struct State {
     layout: Vec<Vec<Tile>>,
 }
@@ -75,7 +87,7 @@ impl State {
     }
 }
 
-fn step(state: State) -> State {
+fn step(state: &State) -> State {
     let mut rows = Vec::new();
     for (row_index, row) in state.layout.iter().enumerate() {
         let mut seats = Vec::new();
@@ -119,8 +131,8 @@ fn step(state: State) -> State {
 }
 
 fn main() {
-    //let input = read_input("input.txt");
-    let input = read_input("input_example_1.txt");
+    let input = read_input("input.txt");
+    //let input = read_input("input_example_1.txt");
     let mut state = State {
         layout: input
             .lines()
@@ -137,9 +149,22 @@ fn main() {
             .collect(),
     };
 
-    state = step(state);
+    let mut next_state = step(&state);
+    let mut steps = 1;
+    while next_state != state {
+        state = next_state;
+        next_state = step(&state);
+        steps += 1;
+    }
 
-    println!("{:?}", state.layout);
+    println!("{:?}", next_state.layout);
+    println!("{} steps until equlibrium", steps);
+    let occupied_seats: usize = next_state
+        .layout
+        .iter()
+        .map(|row| row.iter().filter(|&s| *s == Tile::OccupiedSeat).count())
+        .sum();
+    println!("{} seats occupied", occupied_seats);
 
     println!("part I");
     println!("TODO");

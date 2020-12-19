@@ -95,8 +95,17 @@ impl State {
             let steps = row_index;
             let mut occupied = false;
             for step in 1..steps {
-                if let Tile::OccupiedSeat = self.get_seat(row_index - step, seat_index) {
-                    occupied = true;
+                let seat = self.get_seat(row_index - step, seat_index);
+                match seat {
+                    Tile::OccupiedSeat => {
+                        occupied = true;
+                        break;
+                    }
+                    // ignore any occupied seats after the first
+                    Tile::EmptySeat => {
+                        break;
+                    }
+                    _ => (),
                 }
             }
             if occupied {
@@ -109,8 +118,17 @@ impl State {
             let steps = cmp::min(row_index, self.layout[0].len() - seat_index);
             let mut occupied = false;
             for step in 1..steps {
-                if let Tile::OccupiedSeat = self.get_seat(row_index - step, seat_index + step) {
-                    occupied = true;
+                let seat = self.get_seat(row_index - step, seat_index + step);
+                match seat {
+                    Tile::OccupiedSeat => {
+                        occupied = true;
+                        break;
+                    }
+                    // ignore any occupied seats after the first
+                    Tile::EmptySeat => {
+                        break;
+                    }
+                    _ => (),
                 }
             }
             if occupied {
@@ -122,8 +140,17 @@ impl State {
             let steps = self.layout[0].len() - seat_index;
             let mut occupied = false;
             for step in 1..steps {
-                if let Tile::OccupiedSeat = self.get_seat(row_index, seat_index + step) {
-                    occupied = true;
+                let seat = self.get_seat(row_index, seat_index + step);
+                match seat {
+                    Tile::OccupiedSeat => {
+                        occupied = true;
+                        break;
+                    }
+                    // ignore any occupied seats after the first
+                    Tile::EmptySeat => {
+                        break;
+                    }
+                    _ => (),
                 }
             }
             if occupied {
@@ -139,8 +166,17 @@ impl State {
             );
             let mut occupied = false;
             for step in 1..steps {
-                if let Tile::OccupiedSeat = self.get_seat(row_index + step, seat_index + step) {
-                    occupied = true;
+                let seat = self.get_seat(row_index + step, seat_index + step);
+                match seat {
+                    Tile::OccupiedSeat => {
+                        occupied = true;
+                        break;
+                    }
+                    // ignore any occupied seats after the first
+                    Tile::EmptySeat => {
+                        break;
+                    }
+                    _ => (),
                 }
             }
             if occupied {
@@ -153,8 +189,17 @@ impl State {
             let steps = self.layout.len() - row_index;
             let mut occupied = false;
             for step in 1..steps {
-                if let Tile::OccupiedSeat = self.get_seat(row_index + step, seat_index) {
-                    occupied = true;
+                let seat = self.get_seat(row_index + step, seat_index);
+                match seat {
+                    Tile::OccupiedSeat => {
+                        occupied = true;
+                        break;
+                    }
+                    // ignore any occupied seats after the first
+                    Tile::EmptySeat => {
+                        break;
+                    }
+                    _ => (),
                 }
             }
             if occupied {
@@ -167,8 +212,17 @@ impl State {
             let steps = cmp::min(self.layout.len() - row_index, seat_index);
             let mut occupied = false;
             for step in 1..steps {
-                if let Tile::OccupiedSeat = self.get_seat(row_index + step, seat_index - step) {
-                    occupied = true;
+                let seat = self.get_seat(row_index + step, seat_index - step);
+                match seat {
+                    Tile::OccupiedSeat => {
+                        occupied = true;
+                        break;
+                    }
+                    // ignore any occupied seats after the first
+                    Tile::EmptySeat => {
+                        break;
+                    }
+                    _ => (),
                 }
             }
             if occupied {
@@ -181,8 +235,17 @@ impl State {
             let steps = seat_index;
             let mut occupied = false;
             for step in 1..steps {
-                if let Tile::OccupiedSeat = self.get_seat(row_index, seat_index - step) {
-                    occupied = true;
+                let seat = self.get_seat(row_index, seat_index - step);
+                match seat {
+                    Tile::OccupiedSeat => {
+                        occupied = true;
+                        break;
+                    }
+                    // ignore any occupied seats after the first
+                    Tile::EmptySeat => {
+                        break;
+                    }
+                    _ => (),
                 }
             }
             if occupied {
@@ -195,8 +258,17 @@ impl State {
             let steps = cmp::min(row_index, seat_index);
             let mut occupied = false;
             for step in 1..steps {
-                if let Tile::OccupiedSeat = self.get_seat(row_index - step, seat_index - step) {
-                    occupied = true;
+                let seat = self.get_seat(row_index - step, seat_index - step);
+                match seat {
+                    Tile::OccupiedSeat => {
+                        occupied = true;
+                        break;
+                    }
+                    // ignore any occupied seats after the first
+                    Tile::EmptySeat => {
+                        break;
+                    }
+                    _ => (),
                 }
             }
             if occupied {

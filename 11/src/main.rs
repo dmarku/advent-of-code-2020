@@ -294,80 +294,97 @@ impl fmt::Debug for State {
 }
 
 fn step(state: &State) -> State {
-    let mut rows = Vec::new();
-    for (row_index, row) in state.layout.iter().enumerate() {
-        let mut seats = Vec::new();
-        for (seat_index, seat) in row.iter().enumerate() {
-            let neighbors = state.get_neighbors(row_index, seat_index);
+    let next = |ri, si, seat| {
+        let neighbors = state.get_neighbors(ri, si);
+        let occupied_seats = neighbors
+            .iter()
+            .filter(|s| match s {
+                Tile::OccupiedSeat => true,
+                _ => false,
+            })
+            .count();
 
-            let next = match seat {
-                Tile::EmptySeat => {
-                    if neighbors.iter().all(|s| match s {
-                        Tile::OccupiedSeat => false,
-                        _ => true,
-                    }) {
-                        Tile::OccupiedSeat
-                    } else {
-                        *seat
-                    }
+        match seat {
+            Tile::EmptySeat => {
+                if occupied_seats == 0 {
+                    Tile::OccupiedSeat
+                } else {
+                    Tile::EmptySeat
                 }
-                Tile::OccupiedSeat => {
-                    let occupied = neighbors
-                        .iter()
-                        .filter(|s| match s {
-                            Tile::OccupiedSeat => true,
-                            _ => false,
-                        })
-                        .count();
-                    if occupied >= 4 {
-                        Tile::EmptySeat
-                    } else {
-                        Tile::OccupiedSeat
-                    }
+            }
+            Tile::OccupiedSeat => {
+                if occupied_seats >= 4 {
+                    Tile::EmptySeat
+                } else {
+                    Tile::OccupiedSeat
                 }
-                other => *other,
-            };
-
-            seats.push(next);
+            }
+            other => other,
         }
-        rows.push(seats);
-    }
+    };
 
-    State { layout: rows }
+    State {
+        layout: state
+            .layout
+            .iter()
+            .enumerate()
+            .map(|(ri, row)| {
+                row.iter()
+                    .enumerate()
+                    .map(|(si, seat)| next(ri, si, *seat))
+                    .collect()
+            })
+            .collect(),
+    }
 }
 
 fn step_pt2(state: &State) -> State {
-    let mut rows = Vec::new();
-    for (row_index, row) in state.layout.iter().enumerate() {
-        let mut seats = Vec::new();
-        for (seat_index, seat) in row.iter().enumerate() {
-            let occupied_seats = state.occupied_count(row_index, seat_index);
+    let next = |ri, si, seat| {
+        let occupied_seats = state.occupied_count(ri, si);
 
-            let next = match seat {
-                Tile::EmptySeat => {
-                    if occupied_seats == 0 {
-                        Tile::OccupiedSeat
-                    } else {
-                        *seat
-                    }
+        match seat {
+            Tile::EmptySeat => {
+                if occupied_seats == 0 {
+                    Tile::OccupiedSeat
+                } else {
+                    Tile::EmptySeat
                 }
-                Tile::OccupiedSeat => {
-                    if occupied_seats >= 5 {
-                        Tile::EmptySeat
-                    } else {
-                        Tile::OccupiedSeat
-                    }
+            }
+            Tile::OccupiedSeat => {
+                if occupied_seats >= 5 {
+                    Tile::EmptySeat
+                } else {
+                    Tile::OccupiedSeat
                 }
-                other => *other,
-            };
-
-            seats.push(next);
+            }
+            other => other,
         }
-        rows.push(seats);
-    }
+    };
 
-    State { layout: rows }
+    State {
+        layout: state
+            .layout
+            .iter()
+            .enumerate()
+            .map(|(ri, row)| {
+                row.iter()
+                    .enumerate()
+                    .map(|(si, seat)| next(ri, si, *seat))
+                    .collect()
+            })
+            .collect(),
+    }
 }
+
+/*
+make_row = map(compose(
+    chars,
+    map(|c| match c {...}),
+    collect
+));
+
+make_layout = compose(lines, make_row, collect);
+*/
 
 fn main() {
     //let input = read_input("input.txt");

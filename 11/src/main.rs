@@ -92,9 +92,9 @@ impl State {
 
         //north
         {
-            let steps = row_index;
+            let end = row_index;
             let mut occupied = false;
-            for step in 1..steps {
+            for step in 1..=end {
                 let seat = self.get_seat(row_index - step, seat_index);
                 match seat {
                     Tile::OccupiedSeat => {
@@ -115,9 +115,9 @@ impl State {
 
         //northeast
         {
-            let steps = cmp::min(row_index, self.layout[0].len() - seat_index);
+            let end = cmp::min(row_index, self.layout[0].len() - (seat_index + 1));
             let mut occupied = false;
-            for step in 1..steps {
+            for step in 1..=end {
                 let seat = self.get_seat(row_index - step, seat_index + step);
                 match seat {
                     Tile::OccupiedSeat => {
@@ -137,9 +137,9 @@ impl State {
         }
         //east
         {
-            let steps = self.layout[0].len() - seat_index;
+            let end = self.layout[0].len() - (seat_index + 1);
             let mut occupied = false;
-            for step in 1..steps {
+            for step in 1..=end {
                 let seat = self.get_seat(row_index, seat_index + step);
                 match seat {
                     Tile::OccupiedSeat => {
@@ -160,12 +160,12 @@ impl State {
 
         //southeast
         {
-            let steps = cmp::min(
-                self.layout.len() - row_index,
-                self.layout[0].len() - seat_index,
+            let end = cmp::min(
+                self.layout.len() - (row_index + 1),
+                self.layout[0].len() - (seat_index + 1),
             );
             let mut occupied = false;
-            for step in 1..steps {
+            for step in 1..=end {
                 let seat = self.get_seat(row_index + step, seat_index + step);
                 match seat {
                     Tile::OccupiedSeat => {
@@ -186,9 +186,9 @@ impl State {
 
         //south
         {
-            let steps = self.layout.len() - row_index;
+            let end = self.layout.len() - (row_index + 1);
             let mut occupied = false;
-            for step in 1..steps {
+            for step in 1..=end {
                 let seat = self.get_seat(row_index + step, seat_index);
                 match seat {
                     Tile::OccupiedSeat => {
@@ -209,9 +209,9 @@ impl State {
 
         //southwest
         {
-            let steps = cmp::min(self.layout.len() - row_index, seat_index);
+            let end = cmp::min(self.layout.len() - (row_index + 1), seat_index);
             let mut occupied = false;
-            for step in 1..steps {
+            for step in 1..=end {
                 let seat = self.get_seat(row_index + step, seat_index - step);
                 match seat {
                     Tile::OccupiedSeat => {
@@ -232,9 +232,9 @@ impl State {
 
         //west
         {
-            let steps = seat_index;
+            let end = seat_index;
             let mut occupied = false;
-            for step in 1..steps {
+            for step in 1..=end {
                 let seat = self.get_seat(row_index, seat_index - step);
                 match seat {
                     Tile::OccupiedSeat => {
@@ -255,9 +255,9 @@ impl State {
 
         //northwest
         {
-            let steps = cmp::min(row_index, seat_index);
+            let end = cmp::min(row_index, seat_index);
             let mut occupied = false;
-            for step in 1..steps {
+            for step in 1..=end {
                 let seat = self.get_seat(row_index - step, seat_index - step);
                 match seat {
                     Tile::OccupiedSeat => {
@@ -387,8 +387,8 @@ make_layout = compose(lines, make_row, collect);
 */
 
 fn main() {
-    //let input = read_input("input.txt");
-    let input = read_input("input_example_1.txt");
+    let input = read_input("input.txt");
+    //let input = read_input("input_example_1.txt");
     let initial_state = State {
         layout: input
             .lines()
@@ -452,7 +452,18 @@ fn main() {
         println!("{} seats occupied", occupied_seats);
     }
 
+    /*
     let first_step = step_pt2(&initial_state);
-    let second_step = step_pt2(&first_step);
-    println!("{:?}", second_step);
+    for (ri, row) in first_step.layout.iter().enumerate() {
+        for (si, tile) in row.iter().enumerate() {
+            let count = first_step.occupied_count(ri, si);
+            if let Tile::Floor = tile {
+                print!(".");
+            } else {
+                print!("{}", count);
+            };
+        }
+        print!("\n");
+    }
+    */
 }

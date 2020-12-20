@@ -24,9 +24,9 @@ fn main() {
     let input = read_input("input.txt");
     print!("{}", input);
 
-    println!("part I");
+    println!("--- part I ------------------------------------------");
     println!("TODO");
 
-    println!("part II");
+    println!("--- part II -----------------------------------------");
     println!("TODO");
 }

@@ -59,19 +59,19 @@ fn navigate(ship: &Ship, instruction: &str) -> Ship {
             },
         },
         "N" => Ship {
-            x: ship.x - distance,
+            y: ship.y - distance,
             ..*ship
         },
         "S" => Ship {
-            x: ship.x + distance,
-            ..*ship
-        },
-        "E" => Ship {
             y: ship.y + distance,
             ..*ship
         },
+        "E" => Ship {
+            x: ship.x + distance,
+            ..*ship
+        },
         "W" => Ship {
-            y: ship.y - distance,
+            x: ship.x - distance,
             ..*ship
         },
         "L" => Ship {

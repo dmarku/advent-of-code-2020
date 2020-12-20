@@ -115,20 +115,20 @@ impl Direction {
         }
 
         match distance {
-            0.0 => *self,
-            90.0 => match self {
+            d if d == 0.0 => *self,
+            d if d == 90.0 => match self {
                 Direction::North => Direction::West,
                 Direction::West => Direction::South,
                 Direction::South => Direction::East,
                 Direction::East => Direction::North,
             },
-            180.0 => match self {
+            d if d == 180.0 => match self {
                 Direction::North => Direction::South,
                 Direction::West => Direction::East,
                 Direction::South => Direction::North,
                 Direction::East => Direction::West,
             },
-            270.0 => self.turn(90.0).turn(180.0),
+            d if d == 270.0 => self.turn(90.0).turn(180.0),
             _ => *self,
         }
     }

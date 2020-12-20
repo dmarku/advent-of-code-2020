@@ -1,3 +1,4 @@
+use std::f32::consts;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
@@ -28,16 +29,33 @@ enum Direction {
     West,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
+struct Vector {
+    x: f32,
+    y: f32,
+}
+
+impl Vector {
+    fn turn(&self, degrees: f32) -> Vector {
+        let radians = degrees / 180.0 * consts::PI;
+        Vector {
+            x: radians.cos() * self.x - radians.sin() * self.y,
+            y: radians.sin() * self.x + radians.cos() * self.y,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
 struct Ship {
-    x: i32,
-    y: i32,
+    x: f32,
+    y: f32,
     direction: Direction,
+    waypoint: Vector,
 }
 
 fn navigate(ship: &Ship, instruction: &str) -> Ship {
     let code = &instruction[..1];
-    let distance = instruction[1..].parse::<i32>().unwrap();
+    let distance = instruction[1..].parse::<f32>().unwrap();
 
     match code {
         "F" => match ship.direction {
@@ -88,31 +106,81 @@ fn navigate(ship: &Ship, instruction: &str) -> Ship {
 
 impl Direction {
     /// turn counterclockwise
-    fn turn(&self, mut distance: i32) -> Direction {
-        while distance < 0 {
-            distance += 360
+    fn turn(&self, mut distance: f32) -> Direction {
+        while distance < 0.0 {
+            distance += 360.0
         }
-        while distance >= 360 {
-            distance -= 360
+        while distance >= 360.0 {
+            distance -= 360.0
         }
 
         match distance {
-            0 => *self,
-            90 => match self {
+            0.0 => *self,
+            90.0 => match self {
                 Direction::North => Direction::West,
                 Direction::West => Direction::South,
                 Direction::South => Direction::East,
                 Direction::East => Direction::North,
             },
-            180 => match self {
+            180.0 => match self {
                 Direction::North => Direction::South,
                 Direction::West => Direction::East,
                 Direction::South => Direction::North,
                 Direction::East => Direction::West,
             },
-            270 => self.turn(90).turn(180),
+            270.0 => self.turn(90.0).turn(180.0),
             _ => *self,
         }
+    }
+}
+
+fn navigate_pt2(ship: &Ship, instruction: &str) -> Ship {
+    let code = &instruction[..1];
+    let distance = instruction[1..].parse::<f32>().unwrap();
+
+    match code {
+        "F" => Ship {
+            x: ship.x + ship.waypoint.x * distance,
+            y: ship.y + ship.waypoint.y * distance,
+            ..*ship
+        },
+        "N" => Ship {
+            waypoint: Vector {
+                y: ship.waypoint.y - distance,
+                ..ship.waypoint
+            },
+            ..*ship
+        },
+        "S" => Ship {
+            waypoint: Vector {
+                y: ship.waypoint.y + distance,
+                ..ship.waypoint
+            },
+            ..*ship
+        },
+        "E" => Ship {
+            waypoint: Vector {
+                x: ship.waypoint.x + distance,
+                ..ship.waypoint
+            },
+            ..*ship
+        },
+        "W" => Ship {
+            waypoint: Vector {
+                x: ship.waypoint.x - distance,
+                ..ship.waypoint
+            },
+            ..*ship
+        },
+        "L" => Ship {
+            waypoint: ship.waypoint.turn(distance),
+            ..*ship
+        },
+        "R" => Ship {
+            waypoint: ship.waypoint.turn(-distance),
+            ..*ship
+        },
+        _ => panic!("unknown instruction: {}", instruction),
     }
 }
 
@@ -120,14 +188,15 @@ fn main() {
     let input = read_input("input.txt");
     print!("{}", input);
 
-    println!("--- part I ------------------------------------------");
-
     let ship = Ship {
-        x: 0,
-        y: 0,
+        x: 0.0,
+        y: 0.0,
         direction: Direction::East,
+        waypoint: Vector { x: 10.0, y: -1.0 },
     };
     println!("{:?}", ship);
+
+    println!("--- part I ------------------------------------------");
     let final_ship = input
         .lines()
         .fold(ship, |ship, instruction| navigate(&ship, instruction));
@@ -139,5 +208,13 @@ fn main() {
     );
 
     println!("--- part II -----------------------------------------");
-    println!("TODO");
+    let final_ship = input
+        .lines()
+        .fold(ship, |ship, instruction| navigate_pt2(&ship, instruction));
+
+    println!("{:?}", final_ship);
+    println!(
+        "Manhattan distance: {}",
+        final_ship.x.abs() + final_ship.y.abs()
+    );
 }

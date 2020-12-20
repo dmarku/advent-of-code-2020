@@ -173,11 +173,11 @@ fn navigate_pt2(ship: &Ship, instruction: &str) -> Ship {
             ..*ship
         },
         "L" => Ship {
-            waypoint: ship.waypoint.turn(distance),
+            waypoint: ship.waypoint.turn(-distance),
             ..*ship
         },
         "R" => Ship {
-            waypoint: ship.waypoint.turn(-distance),
+            waypoint: ship.waypoint.turn(distance),
             ..*ship
         },
         _ => panic!("unknown instruction: {}", instruction),
@@ -185,6 +185,7 @@ fn navigate_pt2(ship: &Ship, instruction: &str) -> Ship {
 }
 
 fn main() {
+    //let input = read_input("input_example.txt");
     let input = read_input("input.txt");
     print!("{}", input);
 
@@ -208,9 +209,11 @@ fn main() {
     );
 
     println!("--- part II -----------------------------------------");
-    let final_ship = input
-        .lines()
-        .fold(ship, |ship, instruction| navigate_pt2(&ship, instruction));
+    let final_ship = input.lines().fold(ship, |ship, instruction| {
+        let next = navigate_pt2(&ship, instruction);
+        println!("{:?}", next);
+        next
+    });
 
     println!("{:?}", final_ship);
     println!(

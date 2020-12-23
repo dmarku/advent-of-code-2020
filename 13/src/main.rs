@@ -20,6 +20,21 @@ fn read_input(filename: &str) -> String {
     input
 }
 
+fn lcm(numbers: &[u32]) -> Result<u32, ()> {
+    let mut multiples = Vec::from(numbers);
+    // continue as long as multiples aren't equal
+    while multiples[1..].iter().any(|&m| m != multiples[0]) {
+        let min = *multiples.iter().min().ok_or(())?;
+        for (i, m) in multiples.iter_mut().enumerate() {
+            if *m == min {
+                *m += numbers[i];
+            }
+        }
+    }
+
+    Ok(multiples[0])
+}
+
 fn main() {
     let input = read_input("input.txt");
     let (time_string, intervals_string) = {
@@ -30,8 +45,7 @@ fn main() {
     let time = time_string.parse::<u32>().unwrap();
     let intervals: Vec<_> = intervals_string
         .split(",")
-        .filter(|&s| !(&s == &"x"))
-        .map(|s| s.parse::<u32>().unwrap())
+        .filter_map(|s| s.parse::<u32>().ok())
         .collect();
 
     println!("timestamp = {:?}, intervals = {:?}", time, intervals);
@@ -52,5 +66,54 @@ fn main() {
     );
 
     println!("--- part II -----------------------------------------");
-    println!("TODO");
+
+    let intervals_and_offsets: Vec<_> = intervals_string
+        .split(",")
+        .enumerate()
+        .filter_map(|(i, s)| s.parse::<u32>().map(|interval| (i, interval)).ok())
+        .collect();
+
+    println!("{:?}", intervals_and_offsets);
+
+    // find a t such that (t - offset) % interval == 0 for each (offset, interval) in intervals
+
+    let mut t = intervals_and_offsets[0].1 as usize;
+    let mut step = intervals_and_offsets[0].1 as usize;
+
+    for index in 1..intervals_and_offsets.len() {
+        let interval = intervals_and_offsets[index].1 as usize;
+        let offset = interval - (intervals_and_offsets[index].0 % interval);
+
+        while t % interval != offset {
+            t += step;
+            println!(
+                "check t = {}; index = {}; interval/offset = {}/{}; step = {} ",
+                t, index, interval, offset, step
+            );
+        }
+
+        println!(" MATCH!");
+        step *= interval;
+    }
+
+    println!("t = {}", t);
+
+    // brute force - takes ages
+    /*
+    let (offset, step) = intervals
+        .iter()
+        .max_by_key(|(_, interval)| interval)
+        .unwrap();
+
+    let t = (1..)
+        .map(|i| step * i - *offset as u64)
+        .skip_while(|t| {
+            intervals
+                .iter()
+                .any(|(offset, interval)| (t - *offset as u64) % interval != 0)
+        })
+        .nth(0)
+        .unwrap();
+    println!("{:?}", t);
+    */
 }

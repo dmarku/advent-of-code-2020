@@ -70,33 +70,35 @@ fn main() {
     let intervals_and_offsets: Vec<_> = intervals_string
         .split(",")
         .enumerate()
-        .filter_map(|(i, s)| s.parse::<u32>().map(|interval| (i, interval)).ok())
+        .filter_map(|(i, s)| s.parse::<usize>().map(|interval| (i, interval)).ok())
         .collect();
 
     println!("{:?}", intervals_and_offsets);
 
     // find a t such that (t - offset) % interval == 0 for each (offset, interval) in intervals
+    let mut t = intervals_and_offsets[0].1;
+    let mut step = intervals_and_offsets[0].1;
 
-    let mut t = intervals_and_offsets[0].1 as usize;
-    let mut step = intervals_and_offsets[0].1 as usize;
-
-    for index in 1..intervals_and_offsets.len() {
-        let interval = intervals_and_offsets[index].1 as usize;
-        let offset = interval - (intervals_and_offsets[index].0 % interval);
+    for (raw_offset, interval) in &intervals_and_offsets[1..] {
+        let offset = interval - (raw_offset % interval);
 
         while t % interval != offset {
             t += step;
+            /*
             println!(
-                "check t = {}; index = {}; interval/offset = {}/{}; step = {} ",
-                t, index, interval, offset, step
+                "check t = {}; interval/offset = {}/{}; step = {} ",
+                t, interval, offset, step
             );
+            */
         }
 
-        println!(" MATCH!");
+        //println!(" MATCH!");
         step *= interval;
     }
 
     println!("t = {}", t);
+    // known solution for my input
+    //assert_eq!(t, 600689120448303);
 
     // brute force - takes ages
     /*

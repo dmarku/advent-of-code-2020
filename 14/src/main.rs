@@ -21,8 +21,8 @@ fn read_input(filename: &str) -> String {
 }
 
 fn main() {
-    //let input = read_input("input.txt");
-    let input = read_input("input_example.txt");
+    let input = read_input("input.txt");
+    //let input = read_input("input_example.txt");
     println!("{}", input);
 
     println!("--- part I ------------------------------------------");

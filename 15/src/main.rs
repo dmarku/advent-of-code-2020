@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
@@ -20,11 +21,43 @@ fn read_input(filename: &str) -> String {
     input
 }
 
+struct Game {
+    most_recent_turn: HashMap<usize, usize>,
+    turn: usize,
+    last: usize,
+}
+
+impl Game {
+    fn new() -> Game {
+        Game {
+            most_recent_turn: HashMap::new(),
+            turn: 0,
+            last: 0,
+        }
+    }
+
+    fn add(&mut self, n: usize) {
+        self.most_recent_turn.insert(self.last, self.turn);
+        self.turn += 1;
+        self.last = n;
+    }
+
+    fn play(&mut self) {
+        let n = self
+            .most_recent_turn
+            .get(&self.last)
+            .and_then(|n| Some(self.turn - n))
+            .unwrap_or(0);
+        self.add(n);
+    }
+}
+
 fn main() {
     let input = read_input("input.txt");
     //println!("{}", input);
 
     println!("--- part I ------------------------------------------");
+
     let final_turn = 2020;
     let mut turns = Vec::with_capacity(final_turn);
 
@@ -57,5 +90,19 @@ fn main() {
     );
 
     println!("--- part II -----------------------------------------");
-    println!("TODO");
+
+    let final_turn = 30000000;
+    let mut game = Game::new();
+
+    for n in input.split(",").map(|s| s.parse::<usize>()) {
+        game.add(n.unwrap());
+    }
+
+    for _ in game.turn..final_turn {
+        game.play();
+        //print!("\r{}", game.turn);
+    }
+
+    //println!("{:?}", turns);
+    println!("the number on turn {} is {}", final_turn, game.last);
 }

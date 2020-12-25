@@ -22,7 +22,7 @@ fn read_input(filename: &str) -> String {
 
 fn main() {
     let input = read_input("input.txt");
-    print!("{}", input);
+    println!("{}", input);
 
     println!("--- part I ------------------------------------------");
     println!("TODO");

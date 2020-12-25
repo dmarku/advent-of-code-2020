@@ -1,7 +1,10 @@
+use std::collections::HashMap;
+use std::fs::File;
 use std::io::prelude::*;
+use std::iter::once;
+use std::num::ParseIntError;
 use std::path::Path;
-use std::{collections::HashMap, fs::File};
-use std::{num::ParseIntError, str::FromStr};
+use std::str::FromStr;
 use thiserror::Error;
 
 fn read_input(filename: &str) -> String {
@@ -24,21 +27,8 @@ fn read_input(filename: &str) -> String {
 
 fn main() {
     let input = read_input("input.txt");
-    //let input = read_input("input_example.txt");
+    //let input = read_input("input_example_2.txt");
     println!("{}", input);
-
-    println!("--- part I ------------------------------------------");
-    struct State {
-        mask_0: u64,
-        mask_1: u64,
-        memory: HashMap<usize, u64>,
-    }
-
-    let mut state = State {
-        mask_0: !0,
-        mask_1: 0,
-        memory: HashMap::new(),
-    };
 
     enum Instruction {
         Mask(String),
@@ -85,6 +75,19 @@ fn main() {
         }
     }
 
+    println!("--- part I ------------------------------------------");
+    struct State {
+        mask_0: u64,
+        mask_1: u64,
+        memory: HashMap<usize, u64>,
+    }
+
+    let mut state = State {
+        mask_0: !0,
+        mask_1: 0,
+        memory: HashMap::new(),
+    };
+
     for line in input.lines() {
         match line.parse::<Instruction>() {
             Ok(Instruction::Mask(bits)) => {
@@ -116,5 +119,60 @@ fn main() {
     println!("value sum is {}", sum);
 
     println!("--- part II -----------------------------------------");
-    println!("TODO");
+
+    struct State2 {
+        mask_ones: usize,
+        floating_positions: Vec<usize>,
+        memory: HashMap<usize, u64>,
+    }
+
+    let mut state = State2 {
+        mask_ones: 0,
+        floating_positions: vec![],
+        memory: HashMap::new(),
+    };
+
+    fn floating_positions(mask: &str) -> Vec<usize> {
+        mask.chars()
+            .rev()
+            .enumerate()
+            .filter_map(|(i, c)| if c == 'X' { Some(i) } else { None })
+            .collect()
+    }
+
+    fn variations(positions: &[usize], address: usize) -> Box<dyn Iterator<Item = usize>> {
+        if let Some((p, ps)) = positions.split_first() {
+            let mask = !(1 << p);
+            let zero = address & mask;
+            let one = address & mask | (1 << p);
+            Box::new(variations(ps, zero).chain(variations(ps, one)))
+        } else {
+            Box::new(once(address))
+        }
+    }
+
+    for line in input.lines() {
+        match line.parse::<Instruction>() {
+            Ok(Instruction::Mask(bits)) => {
+                state.mask_ones = bits.chars().fold(0, |n, c| {
+                    (n << 1)
+                        | match c {
+                            '1' => 1,
+                            _ => 0,
+                        }
+                });
+                state.floating_positions = floating_positions(&bits);
+            }
+            Ok(Instruction::Mem { address, value }) => {
+                // TODO: expand addresses
+                for addr in variations(&state.floating_positions, address | state.mask_ones) {
+                    state.memory.insert(addr, value);
+                }
+            }
+            _ => (),
+        }
+    }
+
+    let sum: u64 = state.memory.values().sum();
+    println!("value sum is {}", sum);
 }

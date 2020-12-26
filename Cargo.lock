@@ -40,6 +40,10 @@ name = "aoc-2020-15"
 version = "0.1.0"
 
 [[package]]
+name = "aoc-2020-16"
+version = "0.1.0"
+
+[[package]]
 name = "aoc-2020-template"
 version = "0.1.0"
 

@@ -1,5 +1,6 @@
 use std::convert::TryFrom;
 use std::fs::File;
+use std::hash::Hash;
 use std::io::prelude::*;
 use std::path::Path;
 use std::{
@@ -93,7 +94,7 @@ fn env_xyz(p: &Point) -> IntoIter<Point> {
     ].into_iter()
 }
 
-fn state<P: Hash + Eq>(cells: &HashSet<P>, cell: &P) -> Liveliness {
+fn liveliness<P: Hash + Eq>(cells: &HashSet<P>, cell: &P) -> Liveliness {
     if cells.contains(cell) {
         Liveliness::Alive
     } else {
@@ -124,7 +125,7 @@ fn step(cells: &HashSet<Point>) -> HashSet<Point> {
         })
         .into_iter()
         .filter(
-            |(p, neighbors)| match next_state(state(cells, p), *neighbors) {
+            |(p, neighbors)| match next_state(liveliness(cells, p), *neighbors) {
                 Liveliness::Alive => true,
                 Liveliness::Dead => false,
             },

@@ -32,7 +32,7 @@ struct Point {
     z: i32,
 }
 
-fn parse_text(s: &str) -> Option<Vec<Point>> {
+fn parse_points(s: &str) -> Option<Vec<Point>> {
     let mut points = Vec::new();
     for (y, l) in s.lines().enumerate() {
         let y = i32::try_from(y).ok()?;
@@ -117,7 +117,7 @@ fn next_state(l: Liveliness, neighbors: usize) -> Liveliness {
 fn step(cells: &HashSet<Point>) -> HashSet<Point> {
     cells
         .iter()
-        .flat_map(|c| env_xyz(c))
+        .flat_map(|c| env3(c))
         .fold(HashMap::new(), |mut liveliness, cell| {
             *liveliness.entry(cell).or_insert(0) += 1;
             liveliness
@@ -130,11 +130,11 @@ fn step(cells: &HashSet<Point>) -> HashSet<Point> {
             },
         )
         .map(|(p, _)| p)
-        .collect::<HashSet<_>>()
+        .collect::<HashSet<Point>>()
 }
 
 fn part_1(input: &str) -> usize {
-    let temp_cells = parse_text(&input).unwrap();
+    let temp_cells = parse_points(&input).unwrap();
     let cells: HashSet<Point> = temp_cells.into_iter().collect();
 
     let gen_1 = step(&cells);
@@ -146,6 +146,25 @@ fn part_1(input: &str) -> usize {
     //println!("{:#?}", env_xyz(&Point { x: 0, y: 0, z: 0 }))j
 
     gen_6.len()
+}
+
+fn env3(p: &Point) -> impl Iterator<Item = Point> + '_ {
+    (-1..=1)
+        .flat_map(move |x: i32| {
+            (-1..=1).flat_map(move |y: i32| (-1..=1).map(move |z: i32| (x, y, z)))
+        })
+        .filter(|(x, y, z)| {
+            vec![x.abs(), y.abs(), z.abs()]
+                .into_iter()
+                .max()
+                .unwrap_or(0)
+                == 1
+        })
+        .map(move |(x, y, z)| Point {
+            x: p.x + x,
+            y: p.y + y,
+            z: p.z + z,
+        })
 }
 
 fn main() {

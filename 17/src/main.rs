@@ -27,35 +27,43 @@ fn read_input(filename: &str) -> String {
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
-struct Point {
+struct Cell3D {
     x: i32,
     y: i32,
     z: i32,
 }
 
-fn parse_points(s: &str) -> Option<Vec<Point>> {
-    let mut points = Vec::new();
-    for (y, l) in s.lines().enumerate() {
-        let y = i32::try_from(y).ok()?;
-        for (x, c) in l.chars().enumerate() {
-            let x = i32::try_from(x).ok()?;
-            if c == '#' {
-                points.push(Point { x, y, z: 0 });
-            }
-        }
-    }
-
-    Some(points)
-}
-
-fn parse_cells(s: &str) -> Option<Vec<Cell4>> {
+fn parse_cells_3d(s: &str) -> Option<Vec<Cell3D>> {
     let mut cells = Vec::new();
     for (y, l) in s.lines().enumerate() {
         let y = i32::try_from(y).ok()?;
         for (x, c) in l.chars().enumerate() {
             let x = i32::try_from(x).ok()?;
             if c == '#' {
-                cells.push(Cell4 { w: 0, x, y, z: 0 });
+                cells.push(Cell3D { x, y, z: 0 });
+            }
+        }
+    }
+
+    Some(cells)
+}
+
+#[derive(PartialEq, Eq, Hash, Debug)]
+struct Cell4D {
+    w: i32,
+    x: i32,
+    y: i32,
+    z: i32,
+}
+
+fn parse_cells_4d(s: &str) -> Option<Vec<Cell4D>> {
+    let mut cells = Vec::new();
+    for (y, l) in s.lines().enumerate() {
+        let y = i32::try_from(y).ok()?;
+        for (x, c) in l.chars().enumerate() {
+            let x = i32::try_from(x).ok()?;
+            if c == '#' {
+                cells.push(Cell4D { w: 0, x, y, z: 0 });
             }
         }
     }
@@ -66,47 +74,6 @@ fn parse_cells(s: &str) -> Option<Vec<Cell4>> {
 enum Liveliness {
     Alive,
     Dead,
-}
-
-#[rustfmt::skip]
-fn env_xyz(p: &Point) -> IntoIter<Point> {
-    vec![
-        // axis neighbors
-        Point { x: p.x - 1, ..*p },
-        Point { x: p.x + 1, ..*p },
-
-        Point { y: p.y - 1, ..*p },
-        Point { y: p.y + 1, ..*p },
-
-        Point { z: p.z - 1, ..*p },
-        Point { z: p.z + 1, ..*p },
-
-        // planar neighbors
-        Point { x: p.x - 1, y: p.y - 1, ..*p },
-        Point { x: p.x + 1, y: p.y - 1, ..*p },
-        Point { x: p.x - 1, y: p.y + 1, ..*p },
-        Point { x: p.x + 1, y: p.y + 1, ..*p },
-
-        Point { y: p.y - 1, z: p.z - 1, ..*p },
-        Point { y: p.y + 1, z: p.z - 1, ..*p },
-        Point { y: p.y - 1, z: p.z + 1, ..*p },
-        Point { y: p.y + 1, z: p.z + 1, ..*p },
-
-        Point { z: p.z - 1, x: p.x - 1, ..*p },
-        Point { z: p.z + 1, x: p.x - 1, ..*p },
-        Point { z: p.z - 1, x: p.x + 1, ..*p },
-        Point { z: p.z + 1, x: p.x + 1, ..*p },
-
-        // diagonal neighbors
-        Point { x: p.x - 1, y: p.y - 1, z: p.z - 1 },
-        Point { x: p.x + 1, y: p.y - 1, z: p.z - 1 },
-        Point { x: p.x - 1, y: p.y + 1, z: p.z - 1 },
-        Point { x: p.x + 1, y: p.y + 1, z: p.z - 1 },
-        Point { x: p.x - 1, y: p.y - 1, z: p.z + 1 },
-        Point { x: p.x + 1, y: p.y - 1, z: p.z + 1 },
-        Point { x: p.x - 1, y: p.y + 1, z: p.z + 1 },
-        Point { x: p.x + 1, y: p.y + 1, z: p.z + 1 },
-    ].into_iter()
 }
 
 fn liveliness<P: Hash + Eq>(cells: &HashSet<P>, cell: &P) -> Liveliness {
@@ -150,44 +117,36 @@ fn step<C: Hash + Eq>(cells: &HashSet<C>, env: &dyn Fn(&C) -> IntoIter<C>) -> Ha
 }
 
 fn part_1(input: &str) -> usize {
-    let temp_cells = parse_points(&input).unwrap();
-    let cells: HashSet<Point> = temp_cells.into_iter().collect();
+    let temp_cells = parse_cells_3d(&input).unwrap();
+    let cells: HashSet<Cell3D> = temp_cells.into_iter().collect();
 
-    let gen_1 = step::<Point>(&cells, &env3);
-    let gen_2 = step::<Point>(&gen_1, &env3);
-    let gen_3 = step::<Point>(&gen_2, &env3);
-    let gen_4 = step::<Point>(&gen_3, &env3);
-    let gen_5 = step::<Point>(&gen_4, &env3);
-    let gen_6 = step::<Point>(&gen_5, &env3);
+    let gen_1 = step::<Cell3D>(&cells, &env3);
+    let gen_2 = step::<Cell3D>(&gen_1, &env3);
+    let gen_3 = step::<Cell3D>(&gen_2, &env3);
+    let gen_4 = step::<Cell3D>(&gen_3, &env3);
+    let gen_5 = step::<Cell3D>(&gen_4, &env3);
+    let gen_6 = step::<Cell3D>(&gen_5, &env3);
     //println!("{:#?}", env_xyz(&Point { x: 0, y: 0, z: 0 }))j
 
     gen_6.len()
-}
-
-#[derive(PartialEq, Eq, Hash, Debug)]
-struct Cell4 {
-    w: i32,
-    x: i32,
-    y: i32,
-    z: i32,
 }
 
 fn part_2(input: &str) -> usize {
-    let temp_cells = parse_cells(input).unwrap();
-    let cells: HashSet<Cell4> = temp_cells.into_iter().collect();
+    let temp_cells = parse_cells_4d(input).unwrap();
+    let cells: HashSet<Cell4D> = temp_cells.into_iter().collect();
 
-    let gen_1 = step::<Cell4>(&cells, &env4);
-    let gen_2 = step::<Cell4>(&gen_1, &env4);
-    let gen_3 = step::<Cell4>(&gen_2, &env4);
-    let gen_4 = step::<Cell4>(&gen_3, &env4);
-    let gen_5 = step::<Cell4>(&gen_4, &env4);
-    let gen_6 = step::<Cell4>(&gen_5, &env4);
+    let gen_1 = step::<Cell4D>(&cells, &env4);
+    let gen_2 = step::<Cell4D>(&gen_1, &env4);
+    let gen_3 = step::<Cell4D>(&gen_2, &env4);
+    let gen_4 = step::<Cell4D>(&gen_3, &env4);
+    let gen_5 = step::<Cell4D>(&gen_4, &env4);
+    let gen_6 = step::<Cell4D>(&gen_5, &env4);
     //println!("{:#?}", env_xyz(&Point { x: 0, y: 0, z: 0 }))j
 
     gen_6.len()
 }
 
-fn env3(p: &Point) -> IntoIter<Point> {
+fn env3(p: &Cell3D) -> IntoIter<Cell3D> {
     (-1..=1)
         .flat_map(move |x: i32| {
             (-1..=1).flat_map(move |y: i32| (-1..=1).map(move |z: i32| (x, y, z)))
@@ -199,7 +158,7 @@ fn env3(p: &Point) -> IntoIter<Point> {
                 .unwrap_or(0)
                 == 1
         })
-        .map(move |(x, y, z)| Point {
+        .map(move |(x, y, z)| Cell3D {
             x: p.x + x,
             y: p.y + y,
             z: p.z + z,
@@ -208,7 +167,7 @@ fn env3(p: &Point) -> IntoIter<Point> {
         .into_iter()
 }
 
-fn env4(c: &Cell4) -> IntoIter<Cell4> {
+fn env4(c: &Cell4D) -> IntoIter<Cell4D> {
     (-1..=1)
         .flat_map(move |w: i32| {
             (-1..=1).flat_map(move |x: i32| {
@@ -222,7 +181,7 @@ fn env4(c: &Cell4) -> IntoIter<Cell4> {
                 .unwrap_or(0)
                 == 1
         })
-        .map(move |(w, x, y, z)| Cell4 {
+        .map(move |(w, x, y, z)| Cell4D {
             w: c.w + w,
             x: c.x + x,
             y: c.y + y,
@@ -252,5 +211,5 @@ fn main() {
 
     let answer = part_2(&input);
     println!("{} live 4D cells in 6th generation", answer);
-    println!("TODO");
+    assert_eq!(answer, 2640);
 }

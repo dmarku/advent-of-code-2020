@@ -93,7 +93,7 @@ fn env_xyz(p: &Point) -> IntoIter<Point> {
     ].into_iter()
 }
 
-fn state(cells: &HashSet<Point>, cell: &Point) -> Liveliness {
+fn state<P: Hash + Eq>(cells: &HashSet<P>, cell: &P) -> Liveliness {
     if cells.contains(cell) {
         Liveliness::Alive
     } else {

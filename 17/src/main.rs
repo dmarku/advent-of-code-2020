@@ -148,6 +148,17 @@ fn part_1(input: &str) -> usize {
     gen_6.len()
 }
 
+struct Cell4 {
+    w: i32,
+    x: i32,
+    y: i32,
+    z: i32,
+}
+
+fn part_2(_input: &str) -> usize {
+    0
+}
+
 fn env3(p: &Point) -> impl Iterator<Item = Point> + '_ {
     (-1..=1)
         .flat_map(move |x: i32| {
@@ -167,6 +178,28 @@ fn env3(p: &Point) -> impl Iterator<Item = Point> + '_ {
         })
 }
 
+fn env4(c: &Cell4) -> impl Iterator<Item = Cell4> + '_ {
+    (-1..=1)
+        .flat_map(move |w: i32| {
+            (-1..=1).flat_map(move |x: i32| {
+                (-1..=1).flat_map(move |y: i32| (-1..=1).map(move |z: i32| (w, x, y, z)))
+            })
+        })
+        .filter(|(w, x, y, z)| {
+            vec![w.abs(), x.abs(), y.abs(), z.abs()]
+                .into_iter()
+                .max()
+                .unwrap_or(0)
+                == 1
+        })
+        .map(move |(w, x, y, z)| Cell4 {
+            w: c.w + w,
+            x: c.x + x,
+            y: c.y + y,
+            z: c.z + z,
+        })
+}
+
 fn main() {
     //let input = read_input("input_example.txt");
     let input = read_input("input.txt");
@@ -182,5 +215,15 @@ fn main() {
     assert_eq!(answer, 313);
 
     println!("--- part II -----------------------------------------");
+    println!(
+        "{:?}",
+        env4(&Cell4 {
+            w: 0,
+            x: 0,
+            y: 0,
+            z: 0
+        })
+        .count()
+    );
     println!("TODO");
 }

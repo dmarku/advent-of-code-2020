@@ -93,54 +93,50 @@ fn env_xyz(p: &Point) -> IntoIter<Point> {
     ].into_iter()
 }
 
-fn main() {
-    //let input = read_input("input_example.txt");
-    let input = read_input("input.txt");
-    println!("{}", input);
+fn state(cells: &HashSet<Point>, cell: &Point) -> Liveliness {
+    if cells.contains(cell) {
+        Liveliness::Alive
+    } else {
+        Liveliness::Dead
+    }
+}
+
+fn next_state(l: Liveliness, neighbors: usize) -> Liveliness {
+    match l {
+        Liveliness::Alive => match neighbors {
+            n if n == 2 || n == 3 => Liveliness::Alive,
+            _ => Liveliness::Dead,
+        },
+        Liveliness::Dead => match neighbors {
+            n if n == 3 => Liveliness::Alive,
+            _ => Liveliness::Dead,
+        },
+    }
+}
+
+fn step(cells: &HashSet<Point>) -> HashSet<Point> {
+    cells
+        .iter()
+        .flat_map(|c| env_xyz(c))
+        .fold(HashMap::new(), |mut liveliness, cell| {
+            *liveliness.entry(cell).or_insert(0) += 1;
+            liveliness
+        })
+        .into_iter()
+        .filter(
+            |(p, neighbors)| match next_state(state(cells, p), *neighbors) {
+                Liveliness::Alive => true,
+                Liveliness::Dead => false,
+            },
+        )
+        .map(|(p, _)| p)
+        .collect::<HashSet<_>>()
+}
+
+fn part_1(input: &str) -> usize {
     let temp_cells = parse_text(&input).unwrap();
     let cells: HashSet<Point> = temp_cells.into_iter().collect();
 
-    fn state(cells: &HashSet<Point>, cell: &Point) -> Liveliness {
-        if cells.contains(cell) {
-            Liveliness::Alive
-        } else {
-            Liveliness::Dead
-        }
-    }
-
-    fn next_state(l: Liveliness, neighbors: usize) -> Liveliness {
-        match l {
-            Liveliness::Alive => match neighbors {
-                n if n == 2 || n == 3 => Liveliness::Alive,
-                _ => Liveliness::Dead,
-            },
-            Liveliness::Dead => match neighbors {
-                n if n == 3 => Liveliness::Alive,
-                _ => Liveliness::Dead,
-            },
-        }
-    };
-
-    fn step(cells: &HashSet<Point>) -> HashSet<Point> {
-        cells
-            .iter()
-            .flat_map(|c| env_xyz(c))
-            .fold(HashMap::new(), |mut liveliness, cell| {
-                *liveliness.entry(cell).or_insert(0) += 1;
-                liveliness
-            })
-            .into_iter()
-            .filter(
-                |(p, neighbors)| match next_state(state(cells, p), *neighbors) {
-                    Liveliness::Alive => true,
-                    Liveliness::Dead => false,
-                },
-            )
-            .map(|(p, _)| p)
-            .collect::<HashSet<_>>()
-    }
-
-    println!("--- part I ------------------------------------------");
     let gen_1 = step(&cells);
     let gen_2 = step(&gen_1);
     let gen_3 = step(&gen_2);
@@ -148,7 +144,23 @@ fn main() {
     let gen_5 = step(&gen_4);
     let gen_6 = step(&gen_5);
     //println!("{:#?}", env_xyz(&Point { x: 0, y: 0, z: 0 }))j
-    println!("{:#?}", gen_6.len());
+
+    gen_6.len()
+}
+
+fn main() {
+    //let input = read_input("input_example.txt");
+    let input = read_input("input.txt");
+    let example_input = read_input("input_example.txt");
+    println!("{}", input);
+
+    println!("--- part I ------------------------------------------");
+    let example_answer = part_1(&example_input);
+    assert_eq!(example_answer, 112);
+
+    let answer = part_1(&input);
+    println!("{} live cells in 6th generation", answer);
+    assert_eq!(answer, 313);
 
     println!("--- part II -----------------------------------------");
     println!("TODO");

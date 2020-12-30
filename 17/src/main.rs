@@ -48,6 +48,21 @@ fn parse_points(s: &str) -> Option<Vec<Point>> {
     Some(points)
 }
 
+fn parse_cells(s: &str) -> Option<Vec<Cell4>> {
+    let mut cells = Vec::new();
+    for (y, l) in s.lines().enumerate() {
+        let y = i32::try_from(y).ok()?;
+        for (x, c) in l.chars().enumerate() {
+            let x = i32::try_from(x).ok()?;
+            if c == '#' {
+                cells.push(Cell4 { w: 0, x, y, z: 0 });
+            }
+        }
+    }
+
+    Some(cells)
+}
+
 enum Liveliness {
     Alive,
     Dead,
@@ -115,10 +130,10 @@ fn next_state(l: Liveliness, neighbors: usize) -> Liveliness {
     }
 }
 
-fn step(cells: &HashSet<Point>) -> HashSet<Point> {
+fn step<C: Hash + Eq>(cells: &HashSet<C>, env: &dyn Fn(&C) -> IntoIter<C>) -> HashSet<C> {
     cells
         .iter()
-        .flat_map(|c| env3(c))
+        .flat_map(|c| env(c))
         .fold(HashMap::new(), |mut liveliness, cell| {
             *liveliness.entry(cell).or_insert(0) += 1;
             liveliness
@@ -131,24 +146,25 @@ fn step(cells: &HashSet<Point>) -> HashSet<Point> {
             },
         )
         .map(|(p, _)| p)
-        .collect::<HashSet<Point>>()
+        .collect::<HashSet<C>>()
 }
 
 fn part_1(input: &str) -> usize {
     let temp_cells = parse_points(&input).unwrap();
     let cells: HashSet<Point> = temp_cells.into_iter().collect();
 
-    let gen_1 = step(&cells);
-    let gen_2 = step(&gen_1);
-    let gen_3 = step(&gen_2);
-    let gen_4 = step(&gen_3);
-    let gen_5 = step(&gen_4);
-    let gen_6 = step(&gen_5);
+    let gen_1 = step::<Point>(&cells, &env3);
+    let gen_2 = step::<Point>(&gen_1, &env3);
+    let gen_3 = step::<Point>(&gen_2, &env3);
+    let gen_4 = step::<Point>(&gen_3, &env3);
+    let gen_5 = step::<Point>(&gen_4, &env3);
+    let gen_6 = step::<Point>(&gen_5, &env3);
     //println!("{:#?}", env_xyz(&Point { x: 0, y: 0, z: 0 }))j
 
     gen_6.len()
 }
 
+#[derive(PartialEq, Eq, Hash, Debug)]
 struct Cell4 {
     w: i32,
     x: i32,
@@ -156,11 +172,22 @@ struct Cell4 {
     z: i32,
 }
 
-fn part_2(_input: &str) -> usize {
-    0
+fn part_2(input: &str) -> usize {
+    let temp_cells = parse_cells(input).unwrap();
+    let cells: HashSet<Cell4> = temp_cells.into_iter().collect();
+
+    let gen_1 = step::<Cell4>(&cells, &env4);
+    let gen_2 = step::<Cell4>(&gen_1, &env4);
+    let gen_3 = step::<Cell4>(&gen_2, &env4);
+    let gen_4 = step::<Cell4>(&gen_3, &env4);
+    let gen_5 = step::<Cell4>(&gen_4, &env4);
+    let gen_6 = step::<Cell4>(&gen_5, &env4);
+    //println!("{:#?}", env_xyz(&Point { x: 0, y: 0, z: 0 }))j
+
+    gen_6.len()
 }
 
-fn env3(p: &Point) -> impl Iterator<Item = Point> + '_ {
+fn env3(p: &Point) -> IntoIter<Point> {
     (-1..=1)
         .flat_map(move |x: i32| {
             (-1..=1).flat_map(move |y: i32| (-1..=1).map(move |z: i32| (x, y, z)))
@@ -177,9 +204,11 @@ fn env3(p: &Point) -> impl Iterator<Item = Point> + '_ {
             y: p.y + y,
             z: p.z + z,
         })
+        .collect::<Vec<_>>()
+        .into_iter()
 }
 
-fn env4(c: &Cell4) -> impl Iterator<Item = Cell4> + '_ {
+fn env4(c: &Cell4) -> IntoIter<Cell4> {
     (-1..=1)
         .flat_map(move |w: i32| {
             (-1..=1).flat_map(move |x: i32| {
@@ -199,6 +228,8 @@ fn env4(c: &Cell4) -> impl Iterator<Item = Cell4> + '_ {
             y: c.y + y,
             z: c.z + z,
         })
+        .collect::<Vec<_>>()
+        .into_iter()
 }
 
 fn main() {
@@ -212,19 +243,14 @@ fn main() {
     assert_eq!(example_answer, 112);
 
     let answer = part_1(&input);
-    println!("{} live cells in 6th generation", answer);
+    println!("{} live 3D cells in 6th generation", answer);
     assert_eq!(answer, 313);
 
     println!("--- part II -----------------------------------------");
-    println!(
-        "{:?}",
-        env4(&Cell4 {
-            w: 0,
-            x: 0,
-            y: 0,
-            z: 0
-        })
-        .count()
-    );
+    let example_answer = part_2(&example_input);
+    assert_eq!(example_answer, 848);
+
+    let answer = part_2(&input);
+    println!("{} live 4D cells in 6th generation", answer);
     println!("TODO");
 }
